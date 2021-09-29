@@ -119,17 +119,17 @@ int main() {
 	};
 
 	static const GLfloat colors[] = {
-		1.0f, 0.2f, 0.0f,
-		0.4f, 1.0f, 0.5f,
-		0.7f, 0.1f, 1.0f
+		1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 1.0f
 	};
-
+	
 	static const float interleaved[] = {
 		// X      Y      Z       R     G     B
-		  1.f,   0.0f,  0.5f,   0.4f, 0.0f, 0.3f,
+		  1.f,   0.0f,  0.5f,   0.1f, 0.0f, 0.3f,
 		  1.f,   1.f,   0.5f,   0.2f, 0.7f, 0.5f,
-		  0.0f,  1.f,   0.5f,   0.6f, 0.4f, 0.7f,
-		  0.0f,  0.0f,  0.5f,   1.0f, 1.0f, 1.0f
+		  0.0f,  1.f,   0.5f,   0.0f, 0.0f, 0.0f,
+		  0.0f,  0.0f,  0.5f,   0.0f, 0.0f, 1.0f
 	};
 	VertexBuffer* interleaved_vbo = new VertexBuffer();
 	interleaved_vbo->LoadData(interleaved, 6 * 4);
