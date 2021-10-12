@@ -18,6 +18,11 @@
 #include "Shader.h"
 #include "Camera.h"
 
+#include "Utils/MeshBuilder.h"
+#include "Utils/MeshFactory.h"
+#include "Utils/ObjLoader.h"
+#include "VertexTypes.h"
+
 #define LOG_GL_NOTIFICATIONS
 
 /*
@@ -57,7 +62,7 @@ GLFWwindow* window;
 // The current size of our window in pixels
 glm::ivec2 windowSize = glm::ivec2(800, 800);
 // The title of our GLFW window
-std::string windowTitle = "INFR-1350U";
+std::string windowTitle = "Ewan Chang - 100787343";
 
 void GlfwWindowResizedCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -135,10 +140,10 @@ int main() {
 
 	VertexArrayObject::Sptr vao = VertexArrayObject::Create();
 	vao->AddVertexBuffer(posVbo, {
-		BufferAttribute(0, 3, AttributeType::Float, 0, NULL)
+		BufferAttribute(0, 3, AttributeType::Float, 0, NULL, AttribUsage::Position)
 	});
 	vao->AddVertexBuffer(color_vbo, {
-		{ 1, 3, AttributeType::Float, 0, NULL }
+		{ 1, 3, AttributeType::Float, 0, NULL, AttribUsage::Color }
 	});
 
 	static const float interleaved[] = {
@@ -161,96 +166,94 @@ int main() {
 	size_t stride = sizeof(float) * 6;
 	VertexArrayObject::Sptr vao2 = VertexArrayObject::Create();
 	vao2->AddVertexBuffer(interleaved_vbo, {
-		BufferAttribute(0, 3, AttributeType::Float, stride, 0),
-		BufferAttribute(1, 3, AttributeType::Float, stride, sizeof(float) * 3),
+		BufferAttribute(0, 3, AttributeType::Float, stride, 0, AttribUsage::Position),
+		BufferAttribute(1, 3, AttributeType::Float, stride, sizeof(float) * 3, AttribUsage::Color),
 	});
 	vao2->SetIndexBuffer(interleaved_ibo);
 
-	static const GLfloat points2[] = {
-		-0.5f, -0.5f, 0.5f,
-		0.5f, -0.5f, 0.5f,
-		-0.5f, 0.5f, 0.5f
-	};
-
-	static const GLfloat colors2[] = {
-		1.0f, 0.2f, 0.4f,
-		0.3f, 1.0f, 0.8f,
-		0.4f, 0.5f, 1.0f
-	};
-
-	//VBO - Vertex buffer object
-	VertexBuffer::Sptr posVbo2 = VertexBuffer::Create();
-	posVbo2->LoadData(points2, 9);
-
-	VertexBuffer::Sptr color_vbo2 = VertexBuffer::Create();
-	color_vbo2->LoadData(colors2, 9);
-
-	VertexArrayObject::Sptr vao3 = VertexArrayObject::Create();
-	vao3->AddVertexBuffer(posVbo2, {
-		BufferAttribute(0, 3, AttributeType::Float, 0, NULL)
-		});
-	vao3->AddVertexBuffer(color_vbo2, {
-		{ 1, 3, AttributeType::Float, 0, NULL }
-		});
-
 	// Load our shaders
-	Shader::Sptr shader = Shader::Create();
+	Shader* shader = new Shader();
 	shader->LoadShaderPartFromFile("shaders/vertex_shader.glsl", ShaderPartType::Vertex);
 	shader->LoadShaderPartFromFile("shaders/frag_shader.glsl", ShaderPartType::Fragment);
 	shader->Link();
 
-	// GL states
+	// GL states, we'll enable depth testing and backface fulling
 	glEnable(GL_DEPTH_TEST);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+
+	// Get uniform location for the model view projection
+	Camera::Sptr camera = Camera::Create();
+	camera->SetPosition(glm::vec3(0, 3, 3));
+	camera->LookAt(glm::vec3(0.0f));
 
 	// Create a mat4 to store our mvp (for now)
 	glm::mat4 transform = glm::mat4(1.0f);
 	glm::mat4 transform2 = glm::mat4(1.0f);
 	glm::mat4 transform3 = glm::mat4(1.0f);
-	glm::mat4 transform4 = glm::mat4(1.0f);
-
-
-	Camera::Sptr camera = Camera::Create();
-	camera->SetPosition(glm::vec3(0, 2, 2));
-	camera->LookAt(glm::vec3(0.0f));
-
 
 	// Our high-precision timer
 	double lastFrame = glfwGetTime();
+
+	LOG_INFO("Starting mesh build");
+
+	MeshBuilder<VertexPosCol> mesh;
+	MeshFactory::AddIcoSphere(mesh, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.5f), 3);
+	MeshFactory::AddCube(mesh, glm::vec3(0.0f), glm::vec3(0.5f));
+	VertexArrayObject::Sptr vao3 = mesh.Bake();
+
+	VertexArrayObject::Sptr vao4 = ObjLoader::LoadFromFile("Monkey.obj");
+
+	bool isRotating = true;
+	bool isButtonPressed = false;
 
 	///// Game loop /////
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
+		// WEEK 5: Input handling
+		if (glfwGetKey(window, GLFW_KEY_W)) {
+			if (!isButtonPressed) {
+				// This is the action we want to perform on key press
+				isRotating = !isRotating;
+			}
+			isButtonPressed = true;
+		}
+		else {
+			isButtonPressed = false;
+		}
+
 		// Calculate the time since our last frame (dt)
 		double thisFrame = glfwGetTime();
 		float dt = static_cast<float>(thisFrame - lastFrame);
 
-		// Rotate our models around the z axis
-		transform = glm::rotate(glm::mat4(1.0f), static_cast<float>(thisFrame), glm::vec3(0, 0, 1));
-		transform2 = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0.0f, glm::sin(static_cast<float>(thisFrame))));
-		transform3 = glm::translate(glm::mat4(1.0f), glm::vec3(glm::sin(static_cast<float>(thisFrame)), 1.5f, 0.0f));
-		transform4 = glm::rotate(glm::mat4(1.0f), static_cast<float>(thisFrame), glm::vec3(1, 0, 0));
+		// TODO: Week 5 - toggle code
 
-		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+		// Rotate our models around the z axis
+		if (isRotating) {
+			transform  = glm::rotate(glm::mat4(1.0f), static_cast<float>(thisFrame), glm::vec3(0, 0, 1));
+		}
+		transform2 = glm::rotate(glm::mat4(1.0f), -static_cast<float>(thisFrame), glm::vec3(0, 0, 1)) * glm::translate(glm::mat4(1.0f), glm::vec3(0, 0.0f, glm::sin(static_cast<float>(thisFrame))));
+		transform3 = glm::rotate(glm::mat4(1.0f), -static_cast<float>(thisFrame), glm::vec3(1, 0, 0)) * glm::translate(glm::mat4(1.0f), glm::vec3(0, glm::sin(static_cast<float>(thisFrame)), 0.0f));
+
+		// Clear the color and depth buffers
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		Time.DeltaTime;
+
 		// Bind our shader and upload the uniform
 		shader->Bind();
+
+		// Draw spinny triangle
 		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform);
+		vao->Draw();
 
-		vao->Bind();
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		vao->Unbind();
+		// Draw MeshFactory Sample
+		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection()* transform2);
+		vao3->Draw();
 
-		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform2);
-		vao2->Bind();
-		glDrawElements(GL_TRIANGLES, interleaved_ibo->GetElementCount(), (GLenum)interleaved_ibo->GetElementType(), nullptr);
-
-		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform3 * transform4);
-		vao3->Bind();
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		vao3->Unbind();
+		// Draw OBJ loaded model
+		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform3);
+		vao4->Draw();
 
 		VertexArrayObject::Unbind();
 
