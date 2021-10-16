@@ -213,15 +213,18 @@ int main() {
 		glfwPollEvents();
 
 		// WEEK 5: Input handling
-		if (glfwGetKey(window, GLFW_KEY_W)) {
+		if (glfwGetKey(window, GLFW_KEY_SPACE)) {
 			if (!isButtonPressed) {
 				// This is the action we want to perform on key press
-				isRotating = !isRotating;
+				//isRotating = !isRotating;
+				isButtonPressed = true;
+				camera->SetOrthoEnabled(true);
+				camera->SetOrthoVerticalScale(4.0f);
 			}
-			isButtonPressed = true;
-		}
-		else {
-			isButtonPressed = false;
+			else {
+				isButtonPressed = false;
+				camera->SetOrthoEnabled(false);
+			}	
 		}
 
 		// Calculate the time since our last frame (dt)
@@ -232,7 +235,7 @@ int main() {
 
 		// Rotate our models around the z axis
 		if (isRotating) {
-			transform  = glm::rotate(glm::mat4(1.0f), static_cast<float>(thisFrame), glm::vec3(0, 0, 1));
+			transform  = glm::rotate(glm::mat4(1.0f), static_cast<float>(thisFrame), glm::vec3(0, 0, -1));
 		}
 		transform2 = glm::rotate(glm::mat4(1.0f), -static_cast<float>(thisFrame), glm::vec3(0, 0, 1)) * glm::translate(glm::mat4(1.0f), glm::vec3(0, 0.0f, glm::sin(static_cast<float>(thisFrame))));
 		transform3 = glm::rotate(glm::mat4(1.0f), -static_cast<float>(thisFrame), glm::vec3(1, 0, 0)) * glm::translate(glm::mat4(1.0f), glm::vec3(0, glm::sin(static_cast<float>(thisFrame)), 0.0f));
@@ -244,15 +247,15 @@ int main() {
 		shader->Bind();
 
 		// Draw spinny triangle
-		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform);
-		vao->Draw();
+		//shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform);
+		//vao->Draw();
 
 		// Draw MeshFactory Sample
-		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection()* transform2);
-		vao3->Draw();
+		//shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection()* transform2);
+		//vao3->Draw();
 
 		// Draw OBJ loaded model
-		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform3);
+		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform);
 		vao4->Draw();
 
 		VertexArrayObject::Unbind();
