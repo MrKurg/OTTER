@@ -48,11 +48,15 @@ VertexArrayObject::Sptr ObjLoader::LoadFromFile(const std::string& filename)
 	std::vector<glm::vec2> textureCoords;
 	std::vector<glm::vec3> normals;
 	std::vector<glm::ivec3> vertices;
+	std::vector<glm::ivec3> uvs;
+	std::vector<glm::ivec3> normalS;
 
 	glm::vec3 vecData;	//Stores Vertex position
 	glm::vec2 vtData;	//Stores vertex texture coords
 	glm::vec3 vnData;	//Stores vertex normals
 	glm::ivec3 vertexIndices;
+	glm::ivec3 uvIndices;
+	glm::ivec3 normalIndices;
 
 	// Read and process the entire file
 	while (file.peek() != EOF) {
@@ -99,14 +103,19 @@ VertexArrayObject::Sptr ObjLoader::LoadFromFile(const std::string& filename)
 			for (int ix = 0; ix < 3; ix++) {
 				// Read in the 3 attributes (position, UV, normal)
 				char separator;
-				stream >> vertexIndices.x >> separator >> vertexIndices.y >> separator >> vertexIndices.z;
+				stream >> vertexIndices.x >> separator >> uvIndices.y >> separator >> normalIndices.z;
 
 				// OBJ format uses 1-based indices
 				vertexIndices -= glm::ivec3(1);
+				uvIndices -= glm::ivec3(1);
+				normalIndices -= glm::ivec3(1);
 
 				// add the vertex indices to the list
 				// NOTE: This will create duplicate vertices!
 				vertices.push_back(vertexIndices);
+				uvs.push_back(uvIndices);
+				normalS.push_back(normalIndices);
+
 			}
 		}
 
@@ -117,13 +126,13 @@ VertexArrayObject::Sptr ObjLoader::LoadFromFile(const std::string& filename)
 
 	for (int ix = 0; ix < vertices.size(); ix++) {
 		glm::ivec3 attribs = vertices[ix];
-		glm::ivec3 attribs2 = vertices[ix];
-		glm::ivec3 attribs3 = vertices[ix];
+		glm::ivec3 attribs2 = uvs[ix];
+		glm::ivec3 attribs3 = normalS[ix];
 
 		// Extract attributes from lists (except color)
 		glm::vec3 position = positions[attribs.x];
-		glm::vec3 normal = normals[attribs2.x];
-		glm::vec2 uv = textureCoords[attribs3.x];
+		glm::vec2 uv = textureCoords[attribs2.y];
+		glm::vec3 normal = normals[attribs3.z];
 		glm::vec4 color = glm::vec4(1.0f);
 
 		// Add the vertex to the mesh

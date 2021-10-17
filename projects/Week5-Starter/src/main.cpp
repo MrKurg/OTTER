@@ -204,6 +204,7 @@ int main() {
 	VertexArrayObject::Sptr vao3 = mesh.Bake();
 
 	VertexArrayObject::Sptr vao4 = ObjLoader::LoadFromFile("Monkey.obj");
+	VertexArrayObject::Sptr vao5 = ObjLoader::LoadFromFile("Monkey.obj");
 
 	bool isRotating = true;
 	bool isButtonPressed = false;
@@ -235,14 +236,16 @@ int main() {
 
 		// Rotate our models around the z axis
 		if (isRotating) {
-			transform  = glm::rotate(glm::mat4(1.0f), static_cast<float>(thisFrame), glm::vec3(0, 0, -1));
+			transform = glm::translate(glm::mat4(1.0f), glm::vec3(1, 0, 0));
+			transform2 = glm::translate(glm::mat4(1.0f), glm::vec3(-1, 0, 0));
+			transform3  = glm::rotate(glm::mat4(1.0f), static_cast<float>(thisFrame), glm::vec3(0, 0, -1));
 		}
-		transform2 = glm::rotate(glm::mat4(1.0f), -static_cast<float>(thisFrame), glm::vec3(0, 0, 1)) * glm::translate(glm::mat4(1.0f), glm::vec3(0, 0.0f, glm::sin(static_cast<float>(thisFrame))));
-		transform3 = glm::rotate(glm::mat4(1.0f), -static_cast<float>(thisFrame), glm::vec3(1, 0, 0)) * glm::translate(glm::mat4(1.0f), glm::vec3(0, glm::sin(static_cast<float>(thisFrame)), 0.0f));
+
+		//transform4 = glm::rotate(glm::mat4(1.0f), -static_cast<float>(thisFrame), glm::vec3(1, 0, 0)) * glm::translate(glm::mat4(1.0f), glm::vec3(0, glm::sin(static_cast<float>(thisFrame)), 0.0f));
 
 		// Clear the color and depth buffers
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		
 		// Bind our shader and upload the uniform
 		shader->Bind();
 
@@ -255,8 +258,11 @@ int main() {
 		//vao3->Draw();
 
 		// Draw OBJ loaded model
-		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform);
+		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform * transform3);
 		vao4->Draw();
+
+		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform2 * transform3);
+		vao5->Draw();
 
 		VertexArrayObject::Unbind();
 
