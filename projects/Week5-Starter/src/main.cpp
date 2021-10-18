@@ -62,7 +62,7 @@ GLFWwindow* window;
 // The current size of our window in pixels
 glm::ivec2 windowSize = glm::ivec2(800, 800);
 // The title of our GLFW window
-std::string windowTitle = "Ewan Chang - 100787343";
+std::string windowTitle = "Ewan Chang - 100787343 and Kevin Huang - 100788603";
 
 void GlfwWindowResizedCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
