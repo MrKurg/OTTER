@@ -48,6 +48,8 @@
 #include "Gameplay/Components/Camera.h"
 #include "Gameplay/Components/RotatingBehaviour.h"
 #include "Gameplay/Components/JumpBehaviour.h"
+#include "Gameplay/Components/MovementBehaviour.h"
+#include "Gameplay/Components/Player2MovementBehaviour.h"
 #include "Gameplay/Components/RenderComponent.h"
 #include "Gameplay/Components/MaterialSwapBehaviour.h"
 
@@ -165,13 +167,17 @@ bool DrawSaveLoadImGui(Scene::Sptr& scene, std::string& path) {
 	// Draw a save button, and save when pressed
 	if (ImGui::Button("Save")) {
 		scene->Save(path);
+		std::string newFilename = std::filesystem::path(path).stem().string() + "-manifest.json";
+		ResourceManager::SaveManifest(newFilename);
 	}
 	ImGui::SameLine();
 	// Load scene from file button
 	if (ImGui::Button("Load")) {
 		// Since it's a reference to a ptr, this will
 		// overwrite the existing scene!
-		scene = nullptr;
+		//scene = nullptr;
+		std::string newFilename = std::filesystem::path(path).stem().string() + "-manifest.json";
+		ResourceManager::LoadManifest(newFilename);
 		scene = Scene::Load(path);
 
 		return true;
@@ -240,6 +246,8 @@ int main() {
 	ComponentManager::RegisterType<TriggerVolume>();
 	ComponentManager::RegisterType<RotatingBehaviour>();
 	ComponentManager::RegisterType<JumpBehaviour>();
+	ComponentManager::RegisterType<MovementBehaviour>();
+	ComponentManager::RegisterType<Player2MovementBehaviour>();
 	ComponentManager::RegisterType<MaterialSwapBehaviour>();
 
 	// GL states, we'll enable depth testing and backface fulling
@@ -351,8 +359,9 @@ int main() {
 		// Set up the scene's camera
 		GameObject::Sptr camera = scene->CreateGameObject("Main Camera");
 		{
-			camera->SetPostion(glm::vec3(0, 4, 12));
+			camera->SetPostion(glm::vec3(0, 0, 12));
 			camera->LookAt(glm::vec3(0.0f));
+			camera->SetRotation(glm::vec3(0.0f, 0.0f, -180.0f));
 
 			Camera::Sptr cam = camera->Add<Camera>();
 
@@ -370,13 +379,16 @@ int main() {
 
 			table->SetScale(glm::vec3(2.5));
 			table->SetRotation(glm::vec3(90.0f, 0.0f, 0.0f));
+			
 
 			// Add a static rigid body
 			RigidBody::Sptr tablePhysics = table->Add<RigidBody>(RigidBodyType::Static);
+			tablePhysics->SetMass(10.0f);
 			//Table Surface
-			ICollider::Sptr tableCollider = tablePhysics->AddCollider(ConvexMeshCollider::Create());
-			tableCollider->SetScale(glm::vec3(2.5f, 2.5f, 2.5f));
-			tableCollider->SetPosition(glm::vec3(0.0f, -0.3f, 0.0f));
+			BoxCollider::Sptr tableCollider = BoxCollider::Create(glm::vec3(1.0f, 1.0f, 1.0f));
+			tablePhysics->AddCollider(tableCollider);
+			tableCollider->SetScale(glm::vec3(11.0f, 2.5f, 9.0f));
+			tableCollider->SetPosition(glm::vec3(0.0f, -0.8f, 0.0f));
 
 			//Top Wall
 			BoxCollider::Sptr topWallCollider = BoxCollider::Create(glm::vec3(1.0f, 1.0f, 1.0f));
@@ -405,7 +417,7 @@ int main() {
 			//Table Roof
 			BoxCollider::Sptr roofCollider = BoxCollider::Create(glm::vec3(2.5f, 2.5f, 2.5f));
 			tablePhysics->AddCollider(roofCollider);
-			roofCollider->SetPosition(glm::vec3(0.0f, 3.0f, 0.0f));
+			roofCollider->SetPosition(glm::vec3(0.0f, 4.65f, 0.0f));
 			roofCollider->SetScale(glm::vec3(4.4f, 0.5f, 2.2f));
 		}
 
@@ -415,8 +427,9 @@ int main() {
 			puck->SetPostion(glm::vec3(0.0f, 0.0f, 2.0f));
 			// Scale down the plane
 			puck->SetScale(glm::vec3(0.5f));
-
 			puck->SetRotation(glm::vec3(90.0f, 0.0f, 0.0f));
+
+			puck->Add<JumpBehaviour>(); // To set angular factor to 1 on Z axis
 
 			// Create and attach a render component
 			RenderComponent::Sptr renderer = puck->Add<RenderComponent>();
@@ -436,7 +449,7 @@ int main() {
 			paddle->SetScale(glm::vec3(0.6f));
 
 			// Add some behaviour that relies on the physics body
-			//paddle ->Add<JumpBehaviour>();
+			paddle->Add<MovementBehaviour>();
 
 			// Create and attach a renderer for the monkey
 			RenderComponent::Sptr renderer = paddle->Add<RenderComponent>();
@@ -444,10 +457,12 @@ int main() {
 			renderer->SetMaterial(puckMaterial);
 
 			// Add a dynamic rigid body to this monkey
-			RigidBody::Sptr playerPhysics = paddle->Add<RigidBody>(RigidBodyType::Kinematic);
+			RigidBody::Sptr playerPhysics = paddle->Add<RigidBody>(RigidBodyType::Dynamic);
+			playerPhysics->SetMass(1.0f);
 			//playerPhysics->AddCollider(ConvexMeshCollider::Create());
-			BoxCollider::Sptr playerCollider = BoxCollider::Create(glm::vec3(0.6f, 1.0f, 0.6f));
+			BoxCollider::Sptr playerCollider = BoxCollider::Create(glm::vec3(0.6f, 0.6f, 0.6f));
 			playerPhysics->AddCollider(playerCollider);
+			//playerPhysics->SetAngularFactor(glm::vec3(0.0f, 0.0f, 1.0f));
 			playerCollider->SetPosition(glm::vec3(0.0f, 0.8f, 0.0f));
 
 			// We'll add a behaviour that will interact with our trigger volumes
@@ -463,15 +478,18 @@ int main() {
 			paddle2->SetRotation(glm::vec3(90.0f, 0.0f, 0.0f));
 			paddle2->SetScale(glm::vec3(0.6f));
 
+			paddle2->Add<Player2MovementBehaviour>();
+
 			// Add a render component
 			RenderComponent::Sptr renderer = paddle2->Add<RenderComponent>();
 			renderer->SetMesh(paddleMesh);
 			renderer->SetMaterial(paddle2Material);
 
 			// Add a dynamic rigid body to this monkey
-			RigidBody::Sptr player2Physics = paddle2->Add<RigidBody>(RigidBodyType::Kinematic);
+			RigidBody::Sptr player2Physics = paddle2->Add<RigidBody>(RigidBodyType::Dynamic);
+			player2Physics->SetMass(1.0f);
 			//player2Physics->AddCollider(ConvexMeshCollider::Create());
-			BoxCollider::Sptr player2Collider = BoxCollider::Create(glm::vec3(0.6f, 1.0f, 0.6f));
+			BoxCollider::Sptr player2Collider = BoxCollider::Create(glm::vec3(0.6f, 0.6f, 0.6f));
 			player2Physics->AddCollider(player2Collider);
 			player2Collider->SetPosition(glm::vec3(0.0f, 0.8f, 0.0f));
 

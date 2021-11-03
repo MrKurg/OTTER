@@ -65,6 +65,18 @@ namespace Gameplay::Physics {
 		return _angularDamping;
 	}
 
+	void RigidBody::SetAngularFactor(const glm::vec3& angularAngle) {
+		_body->setAngularFactor(ToBt(angularAngle));
+	}
+
+	glm::vec3 RigidBody::GetLinearVelocity() const {
+		return ToGlm(_body->getLinearVelocity());
+	}
+
+	void RigidBody::SetLinearVelocity(const glm::vec3& veloForce) {
+		_body->setLinearVelocity(ToBt(veloForce));
+	}
+
 	void RigidBody::ApplyForce(const glm::vec3& worldForce) {
 		_body->applyCentralForce(ToBt(worldForce));
 	}

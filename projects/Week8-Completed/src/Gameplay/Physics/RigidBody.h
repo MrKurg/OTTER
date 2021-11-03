@@ -71,6 +71,11 @@ namespace Gameplay::Physics {
 		/// </summary>
 		float GetAngularDamping() const;
 
+		void SetAngularFactor(const glm::vec3& angularAngle);
+
+		glm::vec3 GetLinearVelocity() const;
+		void SetLinearVelocity(const glm::vec3& veloForce);
+
 		/// <summary>
 		/// Applies a force in world space to this object, this would be used
 		/// if you want to apply a force every frame on an object
