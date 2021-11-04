@@ -1,3 +1,6 @@
+//Ewan Chang - 100787343
+//Kevin Huang - 100788603
+
 #include <Logging.h>
 #include <iostream>
 
