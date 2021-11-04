@@ -439,6 +439,11 @@ int main() {
 			RigidBody::Sptr puckPhysics = puck->Add<RigidBody>(RigidBodyType::Dynamic);
 			ICollider::Sptr puckCollider = puckPhysics->AddCollider(ConvexMeshCollider::Create());
 			puckCollider->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+
+			// We'll add a behaviour that will interact with our trigger volumes
+			MaterialSwapBehaviour::Sptr triggerInteraction = puck->Add<MaterialSwapBehaviour>();
+			triggerInteraction->EnterMaterial = boxMaterial;
+			triggerInteraction->ExitMaterial = puckMaterial;
 		}
 
 		GameObject::Sptr paddle = scene->CreateGameObject("Paddle");
@@ -464,11 +469,6 @@ int main() {
 			playerPhysics->AddCollider(playerCollider);
 			//playerPhysics->SetAngularFactor(glm::vec3(0.0f, 0.0f, 1.0f));
 			playerCollider->SetPosition(glm::vec3(0.0f, 0.8f, 0.0f));
-
-			// We'll add a behaviour that will interact with our trigger volumes
-			//MaterialSwapBehaviour::Sptr triggerInteraction = monkey1->Add<MaterialSwapBehaviour>();
-			//triggerInteraction->EnterMaterial = boxMaterial;
-			//triggerInteraction->ExitMaterial = monkeyMaterial;
 		}
 
 		GameObject::Sptr paddle2 = scene->CreateGameObject("Paddle 2");
@@ -504,12 +504,23 @@ int main() {
 		//physics->AddCollider(ConvexMeshCollider::Create());
 
 		// Create a trigger volume for testing how we can detect collisions with objects!
-		GameObject::Sptr trigger = scene->CreateGameObject("Trigger"); 
+		GameObject::Sptr leftGoalTrigger = scene->CreateGameObject("Left Goal Trigger"); 
 		{
-			TriggerVolume::Sptr volume = trigger->Add<TriggerVolume>();
-			BoxCollider::Sptr collider2 = BoxCollider::Create(glm::vec3(3.0f, 3.0f, 1.0f));
-			collider2->SetPosition(glm::vec3(0.0f, 0.0f, 0.5f));
-			volume->AddCollider(collider2);
+			TriggerVolume::Sptr leftVolume = leftGoalTrigger->Add<TriggerVolume>();
+			BoxCollider::Sptr goal1Collider = BoxCollider::Create(glm::vec3(3.0f, 3.0f, 1.0f));
+			goal1Collider->SetPosition(glm::vec3(10.9f, 0.0f, 0.5f));
+			goal1Collider->SetScale(glm::vec3(0.17f, 0.63f, 1.0f));
+			leftVolume->AddCollider(goal1Collider);
+		}
+
+		// Create a trigger volume for testing how we can detect collisions with objects!
+		GameObject::Sptr rightGoalTrigger = scene->CreateGameObject("Right Goal Trigger");
+		{
+			TriggerVolume::Sptr rightVolume = rightGoalTrigger->Add<TriggerVolume>();
+			BoxCollider::Sptr goal2Collider = BoxCollider::Create(glm::vec3(1.0f, 3.0f, 1.0f));
+			goal2Collider->SetPosition(glm::vec3(-10.83f, 0.0f, 0.5f));
+			goal2Collider->SetScale(glm::vec3(0.42f, 0.66f, 1.0f));
+			rightVolume->AddCollider(goal2Collider);
 		}
 
 		// Save the asset manifest for all the resources we just loaded

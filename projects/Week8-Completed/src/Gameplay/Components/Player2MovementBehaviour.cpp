@@ -42,18 +42,18 @@ void Player2MovementBehaviour::Update(float deltaTime) {
 
 	if (glfwGetKey(GetGameObject()->GetScene()->Window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 	{
-		_body->SetLinearVelocity(glm::vec3(-10.0f, 0.0f, 0.0f));
+		_body->SetLinearVelocity(glm::vec3(-9.0f, 0.0f, 0.0f));
 	}
 	else if (glfwGetKey(GetGameObject()->GetScene()->Window, GLFW_KEY_LEFT) == GLFW_PRESS)
 	{
-		_body->SetLinearVelocity(glm::vec3(10.0f, 0.0f, 0.0f));
+		_body->SetLinearVelocity(glm::vec3(9.0f, 0.0f, 0.0f));
 	}
 	else if (glfwGetKey(GetGameObject()->GetScene()->Window, GLFW_KEY_UP) == GLFW_PRESS)
 	{
-		_body->SetLinearVelocity(glm::vec3(0.0f, -10.0f, 0.0f));
+		_body->SetLinearVelocity(glm::vec3(0.0f, -9.0f, 0.0f));
 	}
 	else if (glfwGetKey(GetGameObject()->GetScene()->Window, GLFW_KEY_DOWN) == GLFW_PRESS)
 	{
-		_body->SetLinearVelocity(glm::vec3(0.0f, 10.0f, 0.0f));
+		_body->SetLinearVelocity(glm::vec3(0.0f, 9.0f, 0.0f));
 	}
 }

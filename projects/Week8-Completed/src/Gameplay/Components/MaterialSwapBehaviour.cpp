@@ -3,11 +3,12 @@
 #include "Gameplay/GameObject.h"
 
 MaterialSwapBehaviour::MaterialSwapBehaviour() :
+
 	IComponent(),
 	_renderer(nullptr),
 	EnterMaterial(nullptr),
 	ExitMaterial(nullptr)
-{ }
+{}
 MaterialSwapBehaviour::~MaterialSwapBehaviour() = default;
 
 void MaterialSwapBehaviour::OnEnteredTrigger(const Gameplay::Physics::TriggerVolume::Sptr& trigger) {
