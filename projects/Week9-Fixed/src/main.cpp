@@ -17,7 +17,7 @@
 #include <GLM/gtc/matrix_transform.hpp>
 #include <GLM/gtc/type_ptr.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
-#include <GLM/gtx/common.hpp> // for fmod (floating modulus)
+#include <GLM/gtx/common.hpp> // for fmod (floating modulus) 
 
 // Graphics
 #include "Graphics/IndexBuffer.h"
@@ -319,7 +319,7 @@ int main() {
 			monkeyMaterial->Name = "Monkey";
 			monkeyMaterial->MatShader = reflectiveShader;
 			monkeyMaterial->Texture = monkeyTex; 
-			monkeyMaterial->Shininess = 0.5f;
+			monkeyMaterial->Shininess = 1.0f;
 
 		}
 
