@@ -30,6 +30,11 @@ namespace Gameplay {
 		float           Shininess;
 
 		/// <summary>
+		/// How reflective the material is, between 0 and 256, controls specular power
+		/// </summary>
+		Texture2D::Sptr Specular;
+
+		/// <summary>
 		/// Handles applying this material's state to the OpenGL pipeline
 		/// Will bind the shader, update material uniforms, and bind textures
 		/// </summary>

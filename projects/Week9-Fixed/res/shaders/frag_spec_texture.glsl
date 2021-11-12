@@ -25,6 +25,7 @@ uniform vec3  u_CamPos;
 // Unity
 struct Material {
 	sampler2D Diffuse;
+	sampler2D Specular;
 	float     Shininess;
 };
 // Create a uniform for the material
@@ -47,9 +48,10 @@ void main() {
 	vec3 environmentDir = reflect(-toEye, normal);
 	vec3 reflected = SampleEnvironmentMap(environmentDir);
 
+	float textureSpecular = texture(u_Material.Specular, inUV).r;
 	// Will accumulate the contributions of all lights on this fragment
 	// This is defined in the fragment file "multiple_point_lights.glsl"
-	vec3 lightAccumulation = CalcAllLightContribution(inWorldPos, normal, u_CamPos, u_Material.Shininess);
+	vec3 lightAccumulation = CalcAllLightContribution(inWorldPos, normal, u_CamPos, textureSpecular);
 
 	// Get the albedo from the diffuse / albedo map
 	vec4 textureColor = texture(u_Material.Diffuse, inUV);
@@ -57,5 +59,5 @@ void main() {
 	// combine for the final result
 	vec3 result = lightAccumulation  * inColor * textureColor.rgb;
 
-	frag_color = vec4(mix(result, reflected, u_Material.Shininess), textureColor.a);
+	frag_color = vec4(mix(result, reflected, textureSpecular), textureColor.a);
 }

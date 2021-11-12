@@ -13,6 +13,10 @@ namespace Gameplay {
 		if (Texture != nullptr) { 
 			Texture->Bind(1);
 		}
+		MatShader->SetUniform("u_Material.Specular", 2);
+		if (Specular != nullptr) {
+			Specular->Bind(2);
+		}
 	}
 
 	Material::Sptr Material::FromJson(const nlohmann::json& data) {
