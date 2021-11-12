@@ -274,10 +274,10 @@ int main() {
 		// This shader will handle reflective materials
 		Shader::Sptr reflectiveShader = ResourceManager::CreateAsset<Shader>(std::unordered_map<ShaderPartType, std::string>{
 			{ ShaderPartType::Vertex, "shaders/vertex_shader.glsl" },
-			{ ShaderPartType::Fragment, "shaders/frag_environment_reflective.glsl" }
+			{ ShaderPartType::Fragment, "shaders/frag_spec_texture.glsl" }
 		});
 
-		// This shader handles our basic materials without reflections (cause they expensive)
+		// This shader handles our specular materials
 		Shader::Sptr specularShader = ResourceManager::CreateAsset<Shader>(std::unordered_map<ShaderPartType, std::string>{
 			{ ShaderPartType::Vertex, "shaders/vertex_shader.glsl" },
 			{ ShaderPartType::Fragment, "shaders/frag_spec_texture.glsl" }
@@ -312,7 +312,7 @@ int main() {
 		scene->SetSkyboxRotation(glm::rotate(MAT4_IDENTITY, glm::half_pi<float>(), glm::vec3(1.0f, 0.0f, 0.0f)));
 
 		// Create our materials
-		// This will be our box material, with no environment reflections
+		// This will be our box material, with specular shader
 		Material::Sptr specBoxMaterial = ResourceManager::CreateAsset<Material>();
 		{
 			specBoxMaterial->Name = "SpecBox";
@@ -391,7 +391,7 @@ int main() {
 
 			// Create and attach a render component
 			RenderComponent::Sptr renderer = square->Add<RenderComponent>();
-			renderer->SetMesh(monkeyMesh);
+			renderer->SetMesh(planeMesh);
 			renderer->SetMaterial(specBoxMaterial);
 
 			// This object is a renderable only, it doesn't have any behaviours or
